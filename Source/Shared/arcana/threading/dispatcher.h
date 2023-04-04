@@ -74,6 +74,11 @@ namespace arcana
             m_work.clear();
         }
 
+        bool empty()
+        {
+            return m_work.empty();
+        }
+
     private:
         bool internal_tick(const cancellation& token, bool block)
         {
@@ -112,6 +117,7 @@ namespace arcana
         using dispatcher<WorkSize>::blocking_tick;
         using dispatcher<WorkSize>::cancelled;
         using dispatcher<WorkSize>::clear;
+        using dispatcher<WorkSize>::empty;
         using dispatcher<WorkSize>::set_affinity;
         using dispatcher<WorkSize>::tick;
     };
