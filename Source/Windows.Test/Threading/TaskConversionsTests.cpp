@@ -3,36 +3,34 @@
 //
 
 #include <arcana/threading/task_conversions.h>
-#include <CppUnitTest.h>
+#include <gtest/gtest.h>
 #include <winrt/Windows.Devices.Enumeration.h>
 #include <winrt/Windows.Storage.h>
 
 #include <future>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-namespace UnitTests
+class TaskConversionsTest : public ::testing::Test
 {
-    TEST_CLASS(TaskConversionsTest)
-    {
-    public:
-        TEST_METHOD(GivenAsyncOperation_WhenOperationSuceeds_TaskAlsoSucceeds)
+public:
+};
+
+TEST_F(TaskConversionsTest, GivenAsyncOperation_WhenOperationSuceeds_TaskAlsoSucceeds)
+{
+    using namespace winrt::Windows::Devices::Enumeration;
+
+    std::promise<std::optional<arcana::expected<DeviceInformationCollection, std::error_code>>> promise;
+
+    const auto asyncOperation = DeviceInformation::FindAllAsync(DeviceClass::All);
+    auto task = arcana::create_task<std::error_code>(asyncOperation);
+
+    task.then(arcana::inline_scheduler, arcana::cancellation::none(),
+        [&](const arcana::expected<DeviceInformationCollection, std::error_code>& result) noexcept
         {
-            using namespace winrt::Windows::Devices::Enumeration;
+            promise.set_value(result);
+        });
 
-            std::promise<std::optional<arcana::expected<DeviceInformationCollection, std::error_code>>> promise;
-
-            const auto asyncOperation = DeviceInformation::FindAllAsync(DeviceClass::All);
-            auto task = arcana::create_task<std::error_code>(asyncOperation);
-
-            task.then(arcana::inline_scheduler, arcana::cancellation::none(),
-                [&](const arcana::expected<DeviceInformationCollection, std::error_code>& result) noexcept
-                {
-                    promise.set_value(result);
-                });
-
-            Assert::IsTrue(promise.get_future().get()->value() != nullptr);
-        }
+    EXPECT_TRUE(promise.get_future().get()->value() != nullptr);
+}
 
         TEST_METHOD(GivenAsyncOperation_WhenOperationFails_TaskAlsoFails)
         {

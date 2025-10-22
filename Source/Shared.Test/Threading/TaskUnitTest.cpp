@@ -1,4 +1,4 @@
-#include <CppUnitTest.h>
+#include <gtest/gtest.h>
 
 #include <arcana/threading/dispatcher.h>
 
@@ -12,28 +12,27 @@
 #include <algorithm>
 #include <future>
 
-using Assert = Microsoft::VisualStudio::CppUnitTestFramework::Assert;
-
-namespace UnitTests
+class TaskUnitTest : public ::testing::Test
 {
-    TEST_CLASS(TaskUnitTest)
+protected:
+};
+
+TEST_F(TaskUnitTest, CancellationCallback)
+{
+    arcana::cancellation_source source;
+
+    int hit = 0;
+    auto rego = source.add_listener([&]
     {
-        TEST_METHOD(CancellationCallback)
-        {
-            arcana::cancellation_source source;
+        hit++;
+    });
 
-            int hit = 0;
-            auto rego = source.add_listener([&]
-            {
-                hit++;
-            });
+    EXPECT_EQ(0, hit);
 
-            Assert::AreEqual(0, hit);
+    source.cancel();
 
-            source.cancel();
-
-            Assert::AreEqual(1, hit);
-        }
+    EXPECT_EQ(1, hit);
+}
 
         TEST_METHOD(TaskSimpleOrdering)
         {

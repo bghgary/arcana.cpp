@@ -4,50 +4,48 @@
 
 #ifdef __cpp_coroutines
 
-#include <CppUnitTest.h>
+#include <gtest/gtest.h>
 
 #include <arcana/threading/dispatcher.h>
 #include <arcana/threading/coroutine.h>
 
 #include <future>
 
-using Assert = Microsoft::VisualStudio::CppUnitTestFramework::Assert;
-
-namespace UnitTests
+class CoroutineTests : public ::testing::Test
 {
-    TEST_CLASS(CoroutineTests)
+public:
+};
+
+TEST_F(CoroutineTests, VoidTaskReturningCoroutine_GeneratesTask)
+{
+    bool executed = false;
+
+    auto coroutine = [&executed]() -> arcana::task<void, std::error_code>
     {
-    public:
-        TEST_METHOD(VoidTaskReturningCoroutine_GeneratesTask)
-        {
-            bool executed = false;
+        executed = true;
+        co_return arcana::coroutine_success;
+    };
 
-            auto coroutine = [&executed]() -> arcana::task<void, std::error_code>
-            {
-                executed = true;
-                co_return arcana::coroutine_success;
-            };
+    auto task = coroutine();
 
-            auto task = coroutine();
+    EXPECT_TRUE(executed) << "Coroutine did not execute";
+}
 
-            Assert::IsTrue(executed, L"Coroutine did not execute");
-        }
+TEST_F(CoroutineTests, ValueTaskReturningCoroutine_GeneratesTask)
+{
+    auto coroutine = []() -> arcana::task<int, std::error_code>
+    {
+        co_return 42;
+    };
 
-        TEST_METHOD(ValueTaskReturningCoroutine_GeneratesTask)
-        {
-            auto coroutine = []() -> arcana::task<int, std::error_code>
-            {
-                co_return 42;
-            };
+    auto task = coroutine();
 
-            auto task = coroutine();
-
-            bool completed = false;
-            task.then(arcana::inline_scheduler, arcana::cancellation::none(), [&completed](int value) noexcept
-            {
-                completed = true;
-                Assert::AreEqual(42, value, L"Task does not have the expected value");
-            });
+    bool completed = false;
+    task.then(arcana::inline_scheduler, arcana::cancellation::none(), [&completed](int value) noexcept
+    {
+        completed = true;
+        EXPECT_EQ(42, value) << "Task does not have the expected value";
+    });
 
             Assert::IsTrue(completed, L"Task did not complete synchronously");
         }

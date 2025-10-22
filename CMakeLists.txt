@@ -1,6 +1,21 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.11)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    GSL
+    GIT_REPOSITORY https://github.com/Microsoft/GSL.git
+    GIT_TAG v4.0.0)
+
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.14.0)
 
 project(arcana.cpp)
+
+FetchContent_MakeAvailable(GSL)
+FetchContent_MakeAvailable(googletest)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -70,7 +85,6 @@ if(WIN32)
 
     add_library(arcana ${SOURCES})
 
-    target_include_directories(arcana PUBLIC "Source/Submodules/GSL/include")
     target_include_directories(arcana PUBLIC "Source/Shared")
     target_include_directories(arcana PUBLIC "Source/Windows")
 
@@ -81,7 +95,6 @@ if(WIN32)
 else()
     add_library(arcana INTERFACE)
 
-    target_include_directories(arcana INTERFACE "Source/Submodules/GSL/include")
     target_include_directories(arcana INTERFACE "Source/Shared")
 
     if(ANDROID)
@@ -93,4 +106,47 @@ else()
     endif()
 endif()
 
+target_include_directories(arcana PUBLIC "${gsl_SOURCE_DIR}/include")
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+
+# Tests
+if(WIN32)
+    # Shared tests
+    set(SHARED_TEST_SOURCES
+        "Source/Shared.Test/AlgorithmUnitTest.cpp"
+        "Source/Shared.Test/ExpectedUnitTest.cpp"
+        "Source/Shared.Test/InplaceFunctionUnitTest.cpp"
+        "Source/Shared.Test/IteratorUnitTest.cpp"
+        "Source/Shared.Test/TypeTraitsTest.cpp"
+        "Source/Shared.Test/Containers/ContainerUnitTest.cpp"
+        "Source/Shared.Test/Experimental/ArrayUnitTest.cpp"
+        "Source/Shared.Test/Messaging/MediatorUnitTest.cpp"
+        "Source/Shared.Test/Scheduling/SchedulingUnitTest.cpp"
+        "Source/Shared.Test/Threading/CoroutineTests.cpp"
+        "Source/Shared.Test/Threading/DispatcherUnitTest.cpp"
+        "Source/Shared.Test/Threading/TaskUnitTest.cpp")
+
+    # Windows-specific tests
+    set(WINDOWS_TEST_SOURCES
+        "Source/Windows.Test/HresultTest.cpp"
+        "Source/Windows.Test/Threading/TaskConversionsTests.cpp"
+        "Source/Windows.Test/Threading/TaskSchedulersTests.cpp")
+
+    # Create shared test executable
+    add_executable(arcana_shared_tests ${SHARED_TEST_SOURCES})
+    target_link_libraries(arcana_shared_tests PRIVATE arcana gtest_main gtest)
+    target_include_directories(arcana_shared_tests PRIVATE "Source/Shared")
+
+    # Create Windows test executable
+    add_executable(arcana_windows_tests ${WINDOWS_TEST_SOURCES})
+    target_link_libraries(arcana_windows_tests PRIVATE arcana gtest_main gtest)
+    target_include_directories(arcana_windows_tests PRIVATE "Source/Shared" "Source/Windows")
+
+    # Enable testing
+    enable_testing()
+    include(GoogleTest)
+    
+    gtest_discover_tests(arcana_shared_tests)
+    gtest_discover_tests(arcana_windows_tests)
+endif()

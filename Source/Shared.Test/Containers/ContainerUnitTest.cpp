@@ -6,40 +6,37 @@
 #include <arcana/containers/unique_vector.h>
 #include <arcana/containers/unordered_bimap.h>
 #include <arcana/containers/ticketed_collection.h>
-#include <CppUnitTest.h>
+#include <gtest/gtest.h>
 #include <algorithm>
 #include <numeric>
 
-using Assert = Microsoft::VisualStudio::CppUnitTestFramework::Assert;
-
-namespace UnitTests
+class ContainerUnitTest : public ::testing::Test
 {
-    TEST_CLASS(ContainerUnitTest)
-    {
-        TEST_METHOD(SortedVectorInsert)
-        {
-            arcana::sorted_vector<int> elements{ 2, 3, 1, 4 };
+};
+TEST_F(ContainerUnitTest, SortedVectorInsert)
+{
+    arcana::sorted_vector<int> elements{ 2, 3, 1, 4 };
 
-            std::vector<int> desired{ 1, 2, 3, 4 };
-            Assert::IsTrue(equal(elements.begin(), elements.end(), desired.begin(), desired.end()), L"elements should be sorted");
+    std::vector<int> desired{ 1, 2, 3, 4 };
+    EXPECT_TRUE(equal(elements.begin(), elements.end(), desired.begin(), desired.end())) << "elements should be sorted";
 
-            desired = { 1, 2, 3, 4, 5 };
-            elements.insert(5);
-            Assert::IsTrue(equal(elements.begin(), elements.end(), desired.begin(), desired.end()), L"elements should be sorted");
-        }
+    desired = { 1, 2, 3, 4, 5 };
+    elements.insert(5);
+    EXPECT_TRUE(equal(elements.begin(), elements.end(), desired.begin(), desired.end())) << "elements should be sorted";
+}
 
-        TEST_METHOD(UniqueVectorInsert)
-        {
-            arcana::unique_vector<int> elements{ 2, 3, 1, 4 };
+TEST_F(ContainerUnitTest, UniqueVectorInsert)
+{
+    arcana::unique_vector<int> elements{ 2, 3, 1, 4 };
 
-            std::vector<int> desired = { 1, 2, 3, 4 };
-            elements.insert(3);
-            Assert::IsTrue(equal(elements.begin(), elements.end(), desired.begin(), desired.end()), L"elements should be sorted");
+    std::vector<int> desired = { 1, 2, 3, 4 };
+    elements.insert(3);
+    EXPECT_TRUE(equal(elements.begin(), elements.end(), desired.begin(), desired.end())) << "elements should be sorted";
 
-            desired = { 1, 2, 3, 4 };
-            elements.insert(desired.begin(), desired.end());
-            Assert::IsTrue(equal(elements.begin(), elements.end(), desired.begin(), desired.end()), L"elements should be sorted");
-        }
+    desired = { 1, 2, 3, 4 };
+    elements.insert(desired.begin(), desired.end());
+    EXPECT_TRUE(equal(elements.begin(), elements.end(), desired.begin(), desired.end())) << "elements should be sorted";
+}
 
         TEST_METHOD(SortedVectorMerge)
         {

@@ -1,17 +1,14 @@
-#include <CppUnitTest.h>
+#include <gtest/gtest.h>
 
-#include <arcana\functional\inplace_function.h>
-#include <arcana\messaging\mediator.h>
-#include <arcana\expected.h>
+#include <arcana/functional/inplace_function.h>
+#include <arcana/messaging/mediator.h>
+#include <arcana/expected.h>
 
 #include <fstream>
 
-using Assert = Microsoft::VisualStudio::CppUnitTestFramework::Assert;
-
-namespace UnitTests
+class MediatorUnitTest : public ::testing::Test
 {
-    TEST_CLASS(MediatorUnitTest)
-    {
+protected:
         struct tracer
         {
             tracer(std::ofstream& stream)
@@ -74,7 +71,23 @@ namespace UnitTests
             *t.m_stream << "done" << std::endl;
         }
 
-        TEST_METHOD(InplaceFunctionForwardingSemantics)
+        struct one
+        {
+            int value{};
+        };
+
+        struct two
+        {
+            std::string message{};
+        };
+
+        struct three
+        {
+            int mat[3]{};
+        };
+};
+
+TEST_F(MediatorUnitTest, InplaceFunctionForwardingSemantics)
         {
             std::ofstream file{ "tracing.txt", std::ios::trunc };
 
