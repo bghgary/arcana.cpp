@@ -36,3 +36,4 @@ jobs:
             exit 1
           fi
         done
+# rehearsal control: beta unchanged, so ci-complete must pass
