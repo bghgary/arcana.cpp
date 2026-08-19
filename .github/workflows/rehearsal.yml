@@ -15,7 +15,7 @@ jobs:
   beta:
     runs-on: ubuntu-latest
     steps:
-    - run: echo beta ok
+    - run: exit 1
 
   ci-complete:
     name: ci-complete
