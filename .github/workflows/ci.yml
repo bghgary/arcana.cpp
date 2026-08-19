@@ -102,12 +102,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        # Bound apt's own retries and transfer timeouts. When the in-datacenter
-        # mirror is degraded, apt otherwise falls back to archive.ubuntu.com and
-        # can stall there silently for hours: actions/runner-images#14594
-        APT_OPTS="-o Acquire::Retries=1 -o Acquire::http::Timeout=10 -o Acquire::https::Timeout=10"
-        sudo apt-get update $APT_OPTS
-        sudo apt-get install -y $APT_OPTS ${{ matrix.packages }}
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.packages }}
 
     - name: Configure CMake
       run: |
