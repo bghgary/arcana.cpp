@@ -1,0 +1,38 @@
+name: rehearsal
+
+on:
+  push:
+    branches: [gate-rehearsal-base]
+  pull_request:
+    branches: [gate-rehearsal-base]
+
+jobs:
+  alpha:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo alpha ok
+
+  beta:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo beta ok
+
+  ci-complete:
+    name: ci-complete
+    if: always()
+    needs: [alpha, beta]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Verify all jobs succeeded
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
+      run: |
+        echo "Job results: $RESULTS"
+        for result in $RESULTS; do
+          if [ "$result" != "success" ]; then
+            echo "::error::CI did not succeed (results: $RESULTS)"
+            exit 1
+          fi
+        done
